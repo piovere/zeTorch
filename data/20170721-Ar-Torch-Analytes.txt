@@ -1,0 +1,18 @@
+Data: 20170721-Ar-Torch.txt
+Ar,1
+H,0
+O,0
+N,0
+Si,0
+K,0
+Al,0
+Ca,0
+Na,0
+Fe,0
+Mg,0
+S,0
+Ba,0
+Mn,0
+P,0
+Ti,0
+U,0

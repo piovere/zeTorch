@@ -1,0 +1,18 @@
+Data: 20170802-NewYork.txt
+Ar,1
+H,1
+O,1
+N,1
+Si,1
+K,1
+Al,1
+Ca,1
+Na,1
+Fe,1
+Mg,1
+S,1
+Ba,1
+Mn,1
+P,1
+Ti,1
+U,0
