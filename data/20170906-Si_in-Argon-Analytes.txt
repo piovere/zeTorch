@@ -1,0 +1,18 @@
+Data: 20170906-Si_in-Argon-Analytes.txt
+Ar,1
+H,1
+O,1
+N,1
+Si,1
+K,0
+Al,0
+Ca,0
+Na,0
+Fe,0
+Mg,0
+S,0
+Ba,0
+Mn,0
+P,0
+Ti,0
+U,0
