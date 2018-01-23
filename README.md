@@ -8,3 +8,12 @@ We produce spectra from feeding various samples into a plasma torch. The samples
 - [ ] Develop input processing for our spectra files (slice out metadata, determine which columns are needed)
 - [ ] Pair input and output data sets
 - [ ] Input processing and normalization (PCA?)
+
+# Useful Links
+- [LMFIT](https://lmfit.github.io/lmfit-py/): Advanced arbitrary curve fitting library. Wrapper around scipy.optimize
+- [Akaike information criterion (AIC)](https://en.wikipedia.org/wiki/Akaike_information_criterion): scoring for a goodness of model fit
+- [Bayesian information criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion): Another tool for selecting between competing models
+- [Voigt profile](https://en.wikipedia.org/wiki/Voigt_profile): The curve we will be fitting to for the peaks we detect. Combines doppler broadening and Lorentzian interference. Python implementation [here](https://scipython.com/book/chapter-8-scipy/examples/the-voigt-profile/)
+- [Example of 1-D signal smoothing in numpy](http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html)
+- [Numerical Methods in Fortran](https://websites.pmc.ucsc.edu/~fnimmo/eart290c_17/NumericalRecipesinF77.pdf): Textbook on implementing various numerical methods
+
