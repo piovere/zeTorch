@@ -3,7 +3,6 @@
 ###################################################################################################
 ### Name: Read zeTorch Data
 ### Developer: Tucker McClanahan
-###             (tmcclana@vols.utk.edu)
 ### Purpose: Reads zeTorch Data from a run where all of the run files are in the same directory
 ### Use: python read_zeTorch_data.py data_directory/ starting_wavelength ending_wavelength
 ### Dependents: data_directory/ --> this is the directory with all of the spectrometer data files
