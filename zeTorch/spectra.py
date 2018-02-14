@@ -17,11 +17,11 @@ class Spectrum(object):
     def peaks(self, wavelengths, intensities):
         """DOCS
         """
-        if type(wavelengths) is type(3.4):
-
+        pass
 
 
 argon = Spectrum()
+
 argon._peaks = {
     811.5311: 1.0,
     763.5105: 1.0,
