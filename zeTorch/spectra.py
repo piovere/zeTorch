@@ -14,11 +14,6 @@ class Spectrum(object):
         else:
             return self._peaks.get(wavelength)
 
-    def peaks(self, wavelengths, intensities):
-        """DOCS
-        """
-        pass
-
 
 argon = Spectrum()
 
