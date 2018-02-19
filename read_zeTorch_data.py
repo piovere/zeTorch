@@ -22,10 +22,21 @@ from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters
 
 def main():
+<<<<<<< HEAD
 ### Getting the alltabs file
 ### Run some checks
 #    directory_path, starting_wavelength, ending_wavelength = run_checks()
     directory_path = sys.argv[1]    
+=======
+    """ Reading and Processing the Run Data
+    
+    This definition is where the data is parsed and filtered by other definitions. It ends with the
+    plotting of the data by another set of definitions. 
+    """
+
+    directory_path, starting_wavelength, ending_wavelength = run_checks()
+    
+>>>>>>> Gaussian_Fitting
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
@@ -105,6 +116,16 @@ def plot_filter(all_data):
     plt.savefig(pp, format='pdf')
     pp.close()
 def plot_data(all_data, path):
+    """ Making a heatmap plot of all the data in a run along with individual plots of each timestep.
+
+    Keyword arguments:
+    all_data -- List of Run classes
+    path -- String containing the path to the data directory
+    
+    File Outputs:
+    path+'_All_Data.pdf' -- PDF of the heatmap plot and the individual plots of each timestep.
+    """
+     
     path = path.replace('/','_')
     pp = PdfPages(path+'_All_Data.pdf')
     
@@ -133,6 +154,7 @@ def plot_data(all_data, path):
 
 
 def plot_refined_data(refined_data, path):
+    """ Plots the filtered data"""
     path = path.replace('/','_')
     pp = PdfPages(path+'.pdf')
     
@@ -172,7 +194,16 @@ def plot_refined_data(refined_data, path):
     pp.close() 
 
 def refine_data(all_data, p_s, p_e):
+    """ Filters down the data based on some selection criteria. 
 
+    Keyword arguments:
+    all_data -- List of Run classes
+    p_s -- integer of the starting wavelength of a peak
+    p_e -- integer of the ending wavelength of a peak
+
+    Returns:
+    list of Run classes of the runs that meet the selection criteria
+    """
     data = []
     indexes = [i for i in range(np.size(all_data[0].wavelengths)) if all_data[0].wavelengths[i]>p_s and all_data[0].wavelengths[i]<p_e]
     for run in all_data:
@@ -193,6 +224,12 @@ def refine_data(all_data, p_s, p_e):
 
 
 def FWHM(x,y):
+    """ Calculates the FWHM of a given pulse
+
+    Keyword Arguments:
+    x -- List of floats 
+    y -- List of floats
+    """
     half_max = max(y)/2.
     d = np.sign(half_max - np.array(y[0:-1])) - np.sign(half_max - np.array(y[1:]))
     left_idx = np.argwhere(d > 0)[0,0]
@@ -207,6 +244,21 @@ def FWHM(x,y):
      
     
 def parse_input(dirpath):
+    """ Parse the data in the data directory
+    
+    This definition goes through each datafile in the data directory. It goes line by line in each
+    datafile looking for specific keywords and splits the line and assigns certain values in the
+    line to an attribute in the Run() class. When every file in the data directory has been gone
+    through, the definintion returns a list of Run classes where each Run class corresponds to a
+    specific data file within the data directory. 
+     
+    Keyword arguments:
+    dirpath -- string of the path to data directory
+    
+    Returns:
+    List of Run classes
+    """
+
     if not dirpath.endswith('/'):
         dirpath = dirpath+'/'
     filenames = [f for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
@@ -256,6 +308,31 @@ def parse_input(dirpath):
 
 
 class Run(object):
+    """ Class for one run datafile's contents
+    
+    This class contains every piece of information for a single data file.
+
+    Attributes:
+    self.filename -- String of the filename 
+    self.name -- String of name within the file
+    self.user -- String of the username
+    self.spectrometer -- String of the spectrometer name
+    self.trigger_mode -- Integer of the triggermode of the spectrometer
+    self.integration_time -- Float of the integration time
+    self.scans_to_average -- Integer of the scans to average value
+    self.electric_dark_correction_enabled -- String
+    self.nonlinearity_correction_enabled -- String
+    self.boxcar_width -- Integer of the width of the boxcar
+    self.xaxis_mode -- String
+    self.number_of_pixels -- Integer
+    self.wavelengths -- List of floats of the wavelengths in units of nm
+    self.counts -- List of floats of the counts 
+    
+    self.add_data(self,line) -- Definition to add wavelength and count data to their respective
+    lists 
+    """   
+
+
     
     def __init__(self):
         self.filename = ''
@@ -272,11 +349,9 @@ class Run(object):
         self.number_of_pixels = 0
         self.wavelengths = []
         self.counts = []
-        self.max_655 = 0.0
-        self.area_655 = 0.0
-        self.fwhm_655 = 0.0
          
     def add_data(self,line):
+        """ Adding data to the wavelengths and counts lists from a given line"""
         try:
             self.wavelengths.append(float(line.split()[0]))
             self.counts.append(float(line.split()[1]))
@@ -287,7 +362,12 @@ class Run(object):
 
 
 def run_checks():
-    # Run checks on alltabs_file_input
+    """ Making sure the user inputs the correct inputs
+
+
+    Making sure that the user inputs the correct number of expected inputs on the commmand line and
+    that those inputs are of the correct type and can be read by PYTHON. 
+    """
     if np.size(sys.argv)<4:
         raise Exception("Please give python read_erics_data.py data_directory_name starting_wavelength ending_wavelength)")
     dir_path = sys.argv[1]
