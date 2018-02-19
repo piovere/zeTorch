@@ -33,7 +33,7 @@ def main():
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
-    fitting_bb_data(all_data)
+    #fitting_bb_data(all_data)
     peak_wavelength = 655
     gaussian_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
@@ -49,36 +49,60 @@ def main():
 #    plot_data(refined_data, directory_path)
 
 def gaussian_peak_fitting(all_data, peak_wavelength):
+    all_data = fitting_bb_data(all_data)
     for dat in all_data:
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
         peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(peak_wavelength-10.) and
         lam[i]<(peak_wavelength+10.)]
+        
+### Before BB substraction
         peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
         peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
         p = Parameters()
          #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
-        p.add_many(('amp'     ,        1.0,    True,    None,    None,    None),
+        p.add_many(('amp'     ,        15000,    True,    None,    None,    None),
                    ('cen'     ,        peak_wavelength,    True,    None,    None,    None),
-                   ('wid'     ,        1.0,    True,    None,    None,    None))
+                   ('wid'     ,        3.0,    True,    None,    None,    None),
+                   ('scale',           0.0, True, None, None, None))
 
         func = Model(gaussian)
         result = func.fit(peak_counts, x=peak_lam, params=p)
-        
         print result.fit_report()
-        
 
+### After BB subtraction
+        peak_bb_sub_counts = peak_counts - np.asarray(dat.bb[peak_indexes[0]:peak_indexes[-1]])
+        p = Parameters()
+         #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
+        p.add_many(('amp'     ,        14000.,    True,    None,    None,    None),
+                   ('cen'     ,        peak_wavelength,    True,    None,    None,    None),
+                   ('wid'     ,        3.0,    True,    None,    None,    None),
+                   ('scale',           0.0, True, None, None, None))
+
+        func = Model(gaussian)
+        result_bb = func.fit(peak_bb_sub_counts, x=peak_lam, params=p)
+        print "With Black Body Subtraction"
+        print 
+        print
+        print result_bb.fit_report()
+
+        
+ 
         pp = PdfPages('Gaussian_Fit.pdf')
         plt.figure()
         #plt.plot(lam,counts, 'k-', label='Raw Data')
         plt.plot(peak_lam,peak_counts, 'ro', label='Peak Data')
-        plt.plot(peak_lam, result.best_fit, 'b-', label='Fit Peak Data')
+        plt.plot(peak_lam, result.best_fit, 'b-', label='Best Fit Peak Data')
+        plt.plot(peak_lam, result.init_fit, 'k--', label='Initial Fit Peak Data')
+#        plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
+#        plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
+#        plt.plot(peak_lam, result_bb.init_fit, 'b--', label='Initial Fit Peak BB Sub Data')
         plt.legend()
         plt.savefig(pp, format='pdf')
         pp.close()
     
-def gaussian(x, amp, cen, wid):
-    return amp*np.exp(-(x-cen)**2/wid)
+def gaussian(x, amp, cen, wid, scale):
+    return amp*np.exp(-(x-cen)**2/wid)+scale
 
 
 def fitting_bb_data(all_data):
@@ -93,7 +117,8 @@ def fitting_bb_data(all_data):
     all_data -- List of Run classes
 
     """
-
+    
+    filtered_data = []
     for dat in all_data:
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
@@ -115,17 +140,19 @@ def fitting_bb_data(all_data):
         
         print result.fit_report()
         
+        dat.bb = bb
+        filtered_data.append(dat) 
 
-        pp = PdfPages('Filter_Test.pdf')
-        plt.figure()
-        plt.plot(lam,counts, 'k-', label='Raw Data')
-        plt.plot(lam, bb, 'r-', label='Filtered Data')
-        plt.plot(lam, pbb(lam, 5664.64251, 2.7587e-11, 0.0), 'b-', label='Fit Filtered Data')
-#        plt.plot(peak_lam, peaks, 'm*', label='Peaks')
-        #plt.plot(lam[1:], pbb(lam[1:], 3500., 5E-9, -2E-7), label='Raw PBB')
-        plt.legend()
-        plt.savefig(pp, format='pdf')
-        pp.close()
+      #  pp = PdfPages('Filter_Test.pdf')
+      #  plt.figure()
+      #  plt.plot(lam,counts, 'k-', label='Raw Data')
+      #  plt.plot(lam, bb, 'r-', label='Filtered Data')
+      #  plt.plot(lam, pbb(lam, 5664.64251, 2.7587e-11, 0.0), 'b-', label='Fit Filtered Data')
+      #  plt.legend()
+      #  plt.savefig(pp, format='pdf')
+      #  pp.close()
+
+    return filtered_data
 
 def pbb(lam, T, scale, shift):
     h = 6.626070040E-34 #Js
