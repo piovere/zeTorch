@@ -22,21 +22,16 @@ from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters
 
 def main():
-<<<<<<< HEAD
-### Getting the alltabs file
-### Run some checks
-#    directory_path, starting_wavelength, ending_wavelength = run_checks()
-    directory_path = sys.argv[1]    
-=======
     """ Reading and Processing the Run Data
     
     This definition is where the data is parsed and filtered by other definitions. It ends with the
     plotting of the data by another set of definitions. 
     """
+#    directory_path, starting_wavelength, ending_wavelength = run_checks()
+    directory_path = sys.argv[1]    
 
     directory_path, starting_wavelength, ending_wavelength = run_checks()
     
->>>>>>> Gaussian_Fitting
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
