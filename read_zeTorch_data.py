@@ -35,7 +35,7 @@ def main():
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
-    fitting_data(all_data)
+    fitting_bb_data(all_data)
 #    plot_filter(all_data)
 #    plot_data(all_data, directory_path)
     
@@ -49,7 +49,7 @@ def main():
 #    plot_data(refined_data, directory_path)
 
 
-def fitting_data(all_data):
+def fitting_bb_data(all_data):
     """ Fits the black body portion of the spectrum for each datafile.
 
     This definition goes through all of the Run classes for a given dataset and filters out the
