@@ -20,7 +20,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 def main():
-    """ Reading and Processing the Run Data"""
+    """ Reading and Processing the Run Data
+    
+    This definition is where the data is parsed and filtered by other definitions. It ends with the
+    plotting of the data by another set of definitions. 
+    """
 
     directory_path, starting_wavelength, ending_wavelength = run_checks()
     
