@@ -94,9 +94,9 @@ def gaussian_peak_fitting(all_data, peak_wavelength):
         plt.plot(peak_lam,peak_counts, 'ro', label='Peak Data')
         plt.plot(peak_lam, result.best_fit, 'b-', label='Best Fit Peak Data')
         plt.plot(peak_lam, result.init_fit, 'k--', label='Initial Fit Peak Data')
-#        plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
-#        plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
-#        plt.plot(peak_lam, result_bb.init_fit, 'b--', label='Initial Fit Peak BB Sub Data')
+        plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
+        plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
+        plt.plot(peak_lam, result_bb.init_fit, 'b--', label='Initial Fit Peak BB Sub Data')
         plt.legend()
         plt.savefig(pp, format='pdf')
         pp.close()
@@ -334,40 +334,8 @@ def parse_input(dirpath):
     for filename in filenames:
         if filename.startswith('.'):
             continue
-        with open(dirpath+filename, 'r') as f:
-            erics_data = f.readlines()
-            found_data = 0
-            run = Run()
-            run.filename = filename
-            for line in erics_data:
-                line = line.rstrip()
-                if found_data > 0:
-                    run.add_data(line)
-                if line.lower().startswith('data'):
-                    run.name = line.split()[2]
-                if line.lower().startswith('user'):
-                    run.user = line.split()[1]
-                if line.lower().startswith('spectrometer'):
-                    run.spectrometer = line.split()[1]
-                if line.lower().startswith('trigger'):
-                    run.trigger_mode = int(line.split()[2])
-                if line.lower().startswith('integration'):
-                    run.integration_time = float(line.split()[3])
-                if line.lower().startswith('scans'):
-                    run.scans_to_average = int(line.split()[3])
-                if line.lower().startswith('electric'):
-                    run.electric_dark_correction_enabled = line.split()[4]
-                if line.lower().startswith('nonlinearity'):
-                    run.nonlinearity_correction_enabled = line.split()[3]
-                if line.lower().startswith('boxcar'):
-                    run.boxcar_width = int(line.split()[2])
-                if line.lower().startswith('xaxis'):
-                    run.xaxis_mode = line.split()[2]
-                if line.lower().startswith('number'):
-                    run.number_of_pixels = int(line.split()[5])
-                if 'begin spectral data' in line.lower():
-                    found_data = 1
-                
+        run = Run()
+        run.load_file(os.path.join(dirpath,filename))
         data.append(run)
 
     return data
@@ -395,7 +363,9 @@ class Run(object):
     self.counts -- List of floats of the counts 
     
     self.add_data(self,line) -- Definition to add wavelength and count data to their respective
-    lists 
+    lists
+    self.load_file(self, filename) -- Loads the contents of the file and assigns it to the
+    respective attribute 
     """   
 
 
@@ -415,7 +385,43 @@ class Run(object):
         self.number_of_pixels = 0
         self.wavelengths = []
         self.counts = []
-         
+    
+    def load_file(self, filename):
+        self.filename = filename
+        with open(filename, 'r') as f:
+            data = f.readlines()
+            found_data = 0
+            for line in data:
+                line = line.rstrip()
+                if found_data > 0:
+                    self.add_data(line)
+                if line.lower().startswith('data'):
+                    self.name = line.split()[2]
+                if line.lower().startswith('user'):
+                    self.user = line.split()[1]
+                if line.lower().startswith('spectrometer'):
+                    self.spectrometer = line.split()[1]
+                if line.lower().startswith('trigger'):
+                    self.trigger_mode = int(line.split()[2])
+                if line.lower().startswith('integration'):
+                    self.integration_time = float(line.split()[3])
+                if line.lower().startswith('scans'):
+                    self.scans_to_average = int(line.split()[3])
+                if line.lower().startswith('electric'):
+                    self.electric_dark_correction_enabled = line.split()[4]
+                if line.lower().startswith('nonlinearity'):
+                    self.nonlinearity_correction_enabled = line.split()[3]
+                if line.lower().startswith('boxcar'):
+                    self.boxcar_width = int(line.split()[2])
+                if line.lower().startswith('xaxis'):
+                    self.xaxis_mode = line.split()[2]
+                if line.lower().startswith('number'):
+                    self.number_of_pixels = int(line.split()[5])
+                if 'begin spectral data' in line.lower():
+                    found_data = 1
+        
+
+     
     def add_data(self,line):
         """ Adding data to the wavelengths and counts lists from a given line"""
         try:
