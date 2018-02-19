@@ -117,16 +117,19 @@ def fitting_bb_data(all_data):
     all_data -- List of Run classes
 
     """
+
+    cal_data = np.loadtxt('/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/suspect_calibration_data/CalibrationFile.txt')
+    cal_lam = cal_data[0]
+    cal_counts = cal_data[1]
     
+     
+        
     filtered_data = []
     for dat in all_data:
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
-        lam_trunc = [l for l in lam if l > 400.]
-        counts_trun = counts[lam.tolist().index(lam_trunc[0]):]
-        peaks_indexes = sig.find_peaks_cwt(counts, np.arange(1, 10))
-        peak_lam = lam[peaks_indexes]
-        peaks = counts[peaks_indexes]
+        rebinned_cal_counts = np.histogram(cal_counts,lam)
+        deconc_counts = sig.deconvolve(counts,rebinned_cal_counts)
         bb = sig.medfilt(counts,kernel_size=81)
 
         p = Parameters()
@@ -136,21 +139,22 @@ def fitting_bb_data(all_data):
                    ('shift'     ,        0.0,    False,    None,    None,    None))
 
         func = Model(pbb)
-        result = func.fit(counts_trun, lam=lam_trunc, params=p)
+        result = func.fit(bb, lam=lam, params=p)
         
         print result.fit_report()
         
         dat.bb = bb
         filtered_data.append(dat) 
 
-      #  pp = PdfPages('Filter_Test.pdf')
-      #  plt.figure()
-      #  plt.plot(lam,counts, 'k-', label='Raw Data')
-      #  plt.plot(lam, bb, 'r-', label='Filtered Data')
-      #  plt.plot(lam, pbb(lam, 5664.64251, 2.7587e-11, 0.0), 'b-', label='Fit Filtered Data')
-      #  plt.legend()
-      #  plt.savefig(pp, format='pdf')
-      #  pp.close()
+        pp = PdfPages('Filter_Test.pdf')
+        plt.figure()
+        plt.plot(lam,counts, 'k-', label='Raw Data')
+        plt.plot(lam,deconc_counts, 'm-', label='Deconc Data')
+        plt.plot(lam, bb, 'r-', label='Filtered Data')
+        plt.plot(lam, result.best_fit, 'b-', label='Fit Filtered Data')
+        plt.legend()
+        plt.savefig(pp, format='pdf')
+        pp.close()
 
     return filtered_data
 
