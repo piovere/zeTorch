@@ -50,6 +50,18 @@ def main():
 
 
 def fitting_data(all_data):
+    """ Fits the black body portion of the spectrum for each datafile.
+
+    This definition goes through all of the Run classes for a given dataset and filters out the
+    peaks to fit a black body curve to the filtered data. The LMFIT fitting routine is used as a
+    wrapper for the SCIPY optmize tools to fit the Planck's Black Body curve. This function feeds in
+    initial guesses for the parameters and returns a best fitted parameters for the curve. 
+
+    Keyword Arguments:
+    all_data -- List of Run classes
+
+    """
+
     for dat in all_data:
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
@@ -149,7 +161,7 @@ def plot_data(all_data, path):
 
 
 def plot_refined_data(refined_data, path):
-    """ Plots the filtered data"""
+    """ Plots the filtered data."""
     path = path.replace('/','_')
     pp = PdfPages(path+'.pdf')
     
@@ -239,7 +251,7 @@ def FWHM(x,y):
      
     
 def parse_input(dirpath):
-    """ Parse the data in the data directory
+    """ Parse the datafiles in the data directory.
     
     This definition goes through each datafile in the data directory. It goes line by line in each
     datafile looking for specific keywords and splits the line and assigns certain values in the
@@ -303,7 +315,7 @@ def parse_input(dirpath):
 
 
 class Run(object):
-    """ Class for one run datafile's contents
+    """ Class for one run datafile's contents.
     
     This class contains every piece of information for a single data file.
 
