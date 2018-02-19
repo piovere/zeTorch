@@ -30,12 +30,12 @@ def main():
 #    directory_path, starting_wavelength, ending_wavelength = run_checks()
     directory_path = sys.argv[1]    
 
-    directory_path, starting_wavelength, ending_wavelength = run_checks()
-    
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
     fitting_bb_data(all_data)
+    peak_wavelength = 655
+    gaussian_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
 #    plot_data(all_data, directory_path)
     
@@ -47,6 +47,38 @@ def main():
     
 #    plot_refined_data(refined_data, directory_path)
 #    plot_data(refined_data, directory_path)
+
+def gaussian_peak_fitting(all_data, peak_wavelength):
+    for dat in all_data:
+        counts = np.asarray(dat.counts)
+        lam = np.asarray(dat.wavelengths)
+        peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(peak_wavelength-10.) and
+        lam[i]<(peak_wavelength+10.)]
+        peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
+        peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
+        p = Parameters()
+         #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
+        p.add_many(('amp'     ,        1.0,    True,    None,    None,    None),
+                   ('cen'     ,        peak_wavelength,    True,    None,    None,    None),
+                   ('wid'     ,        1.0,    True,    None,    None,    None))
+
+        func = Model(gaussian)
+        result = func.fit(peak_counts, x=peak_lam, params=p)
+        
+        print result.fit_report()
+        
+
+        pp = PdfPages('Gaussian_Fit.pdf')
+        plt.figure()
+        #plt.plot(lam,counts, 'k-', label='Raw Data')
+        plt.plot(peak_lam,peak_counts, 'ro', label='Peak Data')
+        plt.plot(peak_lam, result.best_fit, 'b-', label='Fit Peak Data')
+        plt.legend()
+        plt.savefig(pp, format='pdf')
+        pp.close()
+    
+def gaussian(x, amp, cen, wid):
+    return amp*np.exp(-(x-cen)**2/wid)
 
 
 def fitting_bb_data(all_data):
