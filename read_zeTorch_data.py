@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters
 
+
 def main():
     """ Reading and Processing the Run Data
     
@@ -118,18 +119,20 @@ def fitting_bb_data(all_data):
 
     """
 
-    cal_data = np.loadtxt('/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/suspect_calibration_data/CalibrationFile.txt')
-    cal_lam = cal_data[0]
-    cal_counts = cal_data[1]
+    cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
+    cal_lam = cal_data[:,0].astype(float)
+    cal_counts = cal_data[:,1].astype(float)
     
-     
-        
     filtered_data = []
     for dat in all_data:
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
-        rebinned_cal_counts = np.histogram(cal_counts,lam)
-        deconc_counts = sig.deconvolve(counts,rebinned_cal_counts)
+        rebinned_cal_counts = rebin(cal_lam, cal_counts, lam)
+        rebinned_counts = rebin(lam, counts, cal_lam)
+        fft_counts = np.fft.fft(counts[1::]/np.max(counts))
+        fft_cal_counts = np.fft.fft(rebinned_cal_counts/np.max(rebinned_cal_counts))
+        deconc_counts =np.fft.ifft(fft_counts/fft_cal_counts)*np.max(counts)
+        #deconc_counts = sig.deconvolve(rebinned_counts, cal_counts[1::])
         bb = sig.medfilt(counts,kernel_size=81)
 
         p = Parameters()
@@ -149,14 +152,38 @@ def fitting_bb_data(all_data):
         pp = PdfPages('Filter_Test.pdf')
         plt.figure()
         plt.plot(lam,counts, 'k-', label='Raw Data')
-        plt.plot(lam,deconc_counts, 'm-', label='Deconc Data')
+        plt.plot(lam[1::], deconc_counts, 'm-', label='Deconc Data')
+        #plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
+        #plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
         plt.plot(lam, bb, 'r-', label='Filtered Data')
         plt.plot(lam, result.best_fit, 'b-', label='Fit Filtered Data')
         plt.legend()
         plt.savefig(pp, format='pdf')
+        
+        plt.figure()
+        plt.plot(lam[1::], rebinned_cal_counts, 'c-*', label='Deconc Data')
+        plt.savefig(pp, format='pdf')
         pp.close()
 
     return filtered_data
+
+def rebin(x1, y1, x2):
+    # Newly binned data
+    y2 = []
+    for i in range(x2.size-1):
+        bind = 0.0
+        count = 0.0
+        for t in range(x1.size):
+            if x1[t]>x2[i] and x1[t]<x2[i+1]:
+                count += 1.0
+                bind += y1[t]
+        if count == 0 and i == 0:
+            y2.append(0.0)
+        elif count == 0 and i >0 :
+            y2.append(y2[-1])
+        else:
+            y2.append(bind/count)
+    return np.asarray(y2)
 
 def pbb(lam, T, scale, shift):
     h = 6.626070040E-34 #Js
