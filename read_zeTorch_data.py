@@ -15,6 +15,7 @@
 
 import numpy as np
 from scipy import signal as sig
+from scipy.special import wofz
 import sys
 import os
 import matplotlib.pyplot as plt
@@ -34,11 +35,12 @@ def main():
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
-    #fitting_bb_data(all_data)
+    corrected_data = correct_the_data(all_data)
     peak_wavelength = 655
-    gaussian_peak_fitting(all_data, peak_wavelength)
+#    gaussian_peak_fitting(all_data, peak_wavelength)
+    #voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
-#    plot_data(all_data, directory_path)
+    plot_data(corrected_data, 'Plot')
     
     print 'Total number of data files: %d' % np.size(all_data)
      
@@ -49,10 +51,67 @@ def main():
 #    plot_refined_data(refined_data, directory_path)
 #    plot_data(refined_data, directory_path)
 
+def correct_the_data(all_data):
+    cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
+    cal_lam = cal_data[:,0].astype(float)
+    cal_counts = cal_data[:,1].astype(float)
+    dat = all_data[0]
+    lam = np.asarray(dat.wavelengths)
+    rebinned_cal_counts = rebin(cal_lam, cal_counts, lam)
+    corrected_data = []
+    for dat in all_data:
+        counts = np.asarray(dat.counts)
+        dat.corrected_counts = counts[1::]*rebinned_cal_counts
+        dat.corrected_lam = lam[1::]
+        corrected_data.append(dat) 
+    return corrected_data 
+
+def voigt_peak_fitting(all_data, peak_wavelength):
+    all_data = fitting_bb_data(all_data)
+    for dat in all_data:
+        counts = np.asarray(dat.corrected_counts)
+        lam = np.asarray(dat.wavelengths)
+        peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(peak_wavelength-10.) and
+        lam[i]<(peak_wavelength+10.)]
+        peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
+        peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
+        
+### After BB subtraction
+        peak_bb_sub_counts = peak_counts - np.asarray(dat.bb[peak_indexes[0]:peak_indexes[-1]])
+        p = Parameters()
+         #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
+        p.add_many(('alpha'     ,        3.0,    True,    0.1,    10.,    None),
+                   ('gamma'     ,       3.0,    True,    0.1,      10.,    None),
+                   ('amp'     ,        14000,    True,    0.0,    None,    None),
+                   ('lam0'     ,        peak_wavelength,    645,    665,    None,    None))
+
+        func = Model(voigt)
+        result_bb = func.fit(peak_bb_sub_counts, lam= peak_lam, params=p)
+        print "With Black Body Subtraction"
+        print 
+        print
+        print result_bb.fit_report()
+
+        
+ 
+        pp = PdfPages('Voigt_Fit.pdf')
+        plt.figure()
+        plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
+        plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
+        plt.legend()
+        plt.savefig(pp, format='pdf')
+        pp.close()
+
+def voigt(lam, alpha, gamma, lam0, amp):
+    
+    sigma = alpha/np.sqrt(2*np.log(2))
+    z = ((lam-lam0)+1j*gamma)/(sigma*np.sqrt(2))
+    return np.real(wofz(z))/(sigma*np.sqrt(2.*np.pi))
+
 def gaussian_peak_fitting(all_data, peak_wavelength):
     all_data = fitting_bb_data(all_data)
     for dat in all_data:
-        counts = np.asarray(dat.counts)
+        counts = np.asarray(dat.corrected_counts)
         lam = np.asarray(dat.wavelengths)
         peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(peak_wavelength-10.) and
         lam[i]<(peak_wavelength+10.)]
@@ -94,10 +153,8 @@ def gaussian_peak_fitting(all_data, peak_wavelength):
         #plt.plot(lam,counts, 'k-', label='Raw Data')
         plt.plot(peak_lam,peak_counts, 'ro', label='Peak Data')
         plt.plot(peak_lam, result.best_fit, 'b-', label='Best Fit Peak Data')
-        plt.plot(peak_lam, result.init_fit, 'k--', label='Initial Fit Peak Data')
         plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
         plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
-        plt.plot(peak_lam, result_bb.init_fit, 'b--', label='Initial Fit Peak BB Sub Data')
         plt.legend()
         plt.savefig(pp, format='pdf')
         pp.close()
@@ -110,18 +167,21 @@ def fitting_bb_data(all_data):
     """ Fits the black body portion of the spectrum for each datafile.
 
     This definition goes through all of the Run classes for a given dataset and filters out the
-    peaks to fit a black body curve to the filtered data. The LMFIT fitting routine is used as a
-    wrapper for the SCIPY optmize tools to fit the Planck's Black Body curve. This function feeds in
-    initial guesses for the parameters and returns a best fitted parameters for the curve. 
-
-    Keyword Arguments:
+    peaks to fit a black body curve to the filtered data. The LMFIT fitting routine is used as a wrapper for the SCIPY optmize tools to fit the Planck's Black Body curve. This function feeds in initial guesses for the parameters and returns a best fitted parameters for the curve.  Keyword Arguments:
     all_data -- List of Run classes
 
     """
 
     cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
+    source_data=np.loadtxt(os.getcwd()+'/suspect_calibration_data/Calibrated_Source_Spectral_Output.txt',delimiter=',',skiprows=1)
+    lamp_det = Run()
+    lamp_det.load_file(os.getcwd()+'/suspect_calibration_data/DH-3PlusCalLight-DeuteriumHalogen_HRD10391_13-38-32-533.txt')
+    lamp_det_lam = np.asarray(lamp_det.wavelengths)
+    lamp_det_counts = np.asarray(lamp_det.counts)
     cal_lam = cal_data[:,0].astype(float)
     cal_counts = cal_data[:,1].astype(float)
+    source_lam = source_data[:,0].astype(float)
+    source_counts = source_data[:,1].astype(float)
     
     filtered_data = []
     for dat in all_data:
@@ -129,11 +189,13 @@ def fitting_bb_data(all_data):
         lam = np.asarray(dat.wavelengths)
         rebinned_cal_counts = rebin(cal_lam, cal_counts, lam)
         rebinned_counts = rebin(lam, counts, cal_lam)
-        fft_counts = np.fft.fft(counts[1::]/np.max(counts))
-        fft_cal_counts = np.fft.fft(rebinned_cal_counts/np.max(rebinned_cal_counts))
-        deconc_counts =np.fft.ifft(fft_counts/fft_cal_counts)*np.max(counts)
+        rebinned_source_counts = rebin(source_lam, source_counts, lamp_det_counts)
+        fft_lamp_det_counts = np.fft.fft(lamp_det_counts[1::])
+        fft_lamp_source_counts = np.fft.fft(rebinned_source_counts)
+        cal_calculated = np.fft.ifft(fft_lamp_det_counts/fft_lamp_source_counts)
+        corrected_counts = counts[1::]*rebinned_cal_counts
         #deconc_counts = sig.deconvolve(rebinned_counts, cal_counts[1::])
-        bb = sig.medfilt(counts,kernel_size=81)
+        bb = sig.medfilt(corrected_counts,kernel_size=81)
 
         p = Parameters()
          #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
@@ -142,28 +204,31 @@ def fitting_bb_data(all_data):
                    ('shift'     ,        0.0,    False,    None,    None,    None))
 
         func = Model(pbb)
-        result = func.fit(bb, lam=lam, params=p)
+        result = func.fit(bb, lam=lam[1::], params=p)
         
         print result.fit_report()
         
         dat.bb = bb
+        dat.corrected_counts = corrected_counts
         filtered_data.append(dat) 
 
-        pp = PdfPages('Filter_Test.pdf')
-        plt.figure()
-        plt.plot(lam,counts, 'k-', label='Raw Data')
-        plt.plot(lam[1::], deconc_counts, 'm-', label='Deconc Data')
-        #plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
-        #plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
-        plt.plot(lam, bb, 'r-', label='Filtered Data')
-        plt.plot(lam, result.best_fit, 'b-', label='Fit Filtered Data')
-        plt.legend()
-        plt.savefig(pp, format='pdf')
-        
-        plt.figure()
-        plt.plot(lam[1::], rebinned_cal_counts, 'c-*', label='Deconc Data')
-        plt.savefig(pp, format='pdf')
-        pp.close()
+        #pp = PdfPages('Filter_Test.pdf')
+        #plt.figure()
+        #plt.plot(lam,counts, 'k-', label='Raw Data')
+        #plt.plot(lam[1::], corrected_counts, 'm-', label='Corrected Data')
+        ##plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
+        ##plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
+        ##plt.plot(lam[1::], bb, 'r-', label='Filtered Data')
+        ##plt.plot(lam[1::], result.best_fit, 'b-', label='Fit Filtered Data')
+        #plt.legend()
+        #plt.savefig(pp, format='pdf')
+      
+       # plt.figure()
+       # plt.plot(lamp_det_lam[1::], cal_calculated, 'ko', label='Calculated') 
+       # plt.plot(cal_lam, cal_counts, 'b*', label='From File') 
+       # plt.legend()
+       # plt.savefig(pp, format='pdf')
+    #pp.close() 
 
     return filtered_data
 
@@ -227,7 +292,7 @@ def plot_data(all_data, path):
     pp = PdfPages(path+'_All_Data.pdf')
     
     times = range(np.size(all_data))
-    lam = np.asarray(all_data[0].wavelengths)
+    lam = np.asarray(all_data[0].corrected_lam)
      
     L, T = np.meshgrid(lam, times)
 
@@ -235,10 +300,7 @@ def plot_data(all_data, path):
 
     for t in times:
         for l in range(np.size(lam)):
-            if lam[l] > 645. and lam[l] < 665.:
-                data[t,l] = 1.0
-            else:
-                data[t,l] = abs(all_data[t].counts[l])
+            data[t,l] = abs(all_data[t].corrected_counts[l])
     plt.figure()
     plt.title('Plot of All Data')
     plt.xlabel('Wavelength (nm)')
