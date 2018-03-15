@@ -1,8 +1,7 @@
 #!/bin/python
 
 ###################################################################################################
-### Name: Read zeTorch Data
-### Developer: Tucker McClanahan
+### Name: Read zeTorch Data ### Developer: Tucker McClanahan
 ### Purpose: Reads zeTorch Data from a run where all of the run files are in the same directory
 ### Use: python read_zeTorch_data.py data_directory/ starting_wavelength ending_wavelength
 ### Dependents: data_directory/ --> this is the directory with all of the spectrometer data files
@@ -20,9 +19,7 @@ import sys
 import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from lmfit import Model, Parameters
-
-
+from lmfit import Model, Parameters 
 def main():
     """ Reading and Processing the Run Data
     
@@ -38,7 +35,7 @@ def main():
     corrected_data = correct_the_data(all_data)
     peak_wavelength = 655
 #    gaussian_peak_fitting(all_data, peak_wavelength)
-    #voigt_peak_fitting(all_data, peak_wavelength)
+    voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
     plot_data(corrected_data, 'Plot')
     
@@ -80,13 +77,13 @@ def voigt_peak_fitting(all_data, peak_wavelength):
         peak_bb_sub_counts = peak_counts - np.asarray(dat.bb[peak_indexes[0]:peak_indexes[-1]])
         p = Parameters()
          #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
-        p.add_many(('alpha'     ,        3.0,    True,    0.1,    10.,    None),
-                   ('gamma'     ,       3.0,    True,    0.1,      10.,    None),
-                   ('amp'     ,        14000,    True,    0.0,    None,    None),
-                   ('lam0'     ,        peak_wavelength,    645,    665,    None,    None))
+        p.add_many(('alpha'     ,        3.0,    True,    0.0,    None,    None),
+                   ('gamma'     ,       3.0,    True,    0.0,      None,    None),
+                   ('amp'     ,        70000.,    True,    0.0,    None,    None),
+                   ('lam0'     ,        peak_wavelength,    True,    None,    None,    None))
 
         func = Model(voigt)
-        result_bb = func.fit(peak_bb_sub_counts, lam= peak_lam, params=p)
+        result_bb = func.fit(peak_counts, lam= peak_lam, params=p)
         print "With Black Body Subtraction"
         print 
         print
@@ -105,7 +102,7 @@ def voigt_peak_fitting(all_data, peak_wavelength):
 def voigt(lam, alpha, gamma, lam0, amp):
     
     sigma = alpha/np.sqrt(2*np.log(2))
-    z = ((lam-lam0)+1j*gamma)/(sigma*np.sqrt(2))
+    z = ((lam-lam0)+gamma*1j)/(sigma*np.sqrt(2))
     return np.real(wofz(z))/(sigma*np.sqrt(2.*np.pi))
 
 def gaussian_peak_fitting(all_data, peak_wavelength):
@@ -212,23 +209,23 @@ def fitting_bb_data(all_data):
         dat.corrected_counts = corrected_counts
         filtered_data.append(dat) 
 
-        #pp = PdfPages('Filter_Test.pdf')
-        #plt.figure()
-        #plt.plot(lam,counts, 'k-', label='Raw Data')
-        #plt.plot(lam[1::], corrected_counts, 'm-', label='Corrected Data')
+        pp = PdfPages('Filter_Test.pdf')
+        plt.figure()
+        plt.plot(lam,counts, 'k-', label='Raw Data')
+        plt.plot(lam[1::], corrected_counts, 'm-', label='Corrected Data')
         ##plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
         ##plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
         ##plt.plot(lam[1::], bb, 'r-', label='Filtered Data')
-        ##plt.plot(lam[1::], result.best_fit, 'b-', label='Fit Filtered Data')
-        #plt.legend()
-        #plt.savefig(pp, format='pdf')
+        plt.plot(lam[1::], result.best_fit, 'b-', label='Fit Filtered Data')
+        plt.legend()
+        plt.savefig(pp, format='pdf')
       
-       # plt.figure()
+        plt.figure()
        # plt.plot(lamp_det_lam[1::], cal_calculated, 'ko', label='Calculated') 
-       # plt.plot(cal_lam, cal_counts, 'b*', label='From File') 
-       # plt.legend()
-       # plt.savefig(pp, format='pdf')
-    #pp.close() 
+        plt.plot(cal_lam, cal_counts, 'b*', label='From File') 
+        plt.legend()
+        plt.savefig(pp, format='pdf')
+    pp.close() 
 
     return filtered_data
 
