@@ -20,6 +20,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters 
+import re
 
 def main():
     """ Reading and Processing the Run Data
@@ -38,11 +39,11 @@ def main():
 
     #corrected_data = correct_the_data(all_data)
     corrected_data = fitting_bb_data(all_data)
-    temp_from_H(corrected_data)
+    data = temp_from_H(corrected_data)
 #    gaussian_peak_fitting(all_data, peak_wavelength)
 #    voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
-    plot_data(corrected_data, 'Plot')
+    plot_data(data, 'Plot')
     #plot_refined_data(refined_data, 'Plot')
     
     print('Total number of data files: %d' % np.size(all_data))
@@ -56,6 +57,7 @@ def main():
 
 def temp_from_H(data):
     
+    boltz_temps = [] 
     for dat in data:
         lam = np.asarray(dat.corrected_lam)
         counts = np.asarray(dat.corrected_counts)
@@ -76,13 +78,13 @@ def temp_from_H(data):
                        ('lam0'     ,        poi,    True,    0.0,    None,    None))
             func = Model(voigt)
             result = func.fit(peak_counts, lam=peak_lam, params=p)
-            print result.fit_report()
+            #print result.fit_report()
 
             max_peak_height.append(np.max(result.best_fit))
             max_peak_lam.append(peak_lam[np.argmax(result.best_fit)])
-            plt.figure()
-            plt.plot(peak_lam,peak_counts, 'b*')
-            plt.plot(peak_lam, result.best_fit)
+            #plt.figure()
+            #plt.plot(peak_lam,peak_counts, 'b*')
+            #plt.plot(peak_lam, result.best_fit)
 
         max_peak_lam = np.asarray(max_peak_lam)        
         max_peak_height = np.asarray(max_peak_height)
@@ -93,10 +95,11 @@ def temp_from_H(data):
         boltz_const = 1.38E-23
 
         fd = energy_trans*max_peak_height/(g_weights*trans_prob)
-        boltz_temp = -(energy_trans[0]-energy_trans[1])/np.log(fd[0]/fd[1])/boltz_const
-        print boltz_temp 
+        dat.H_boltz_temp = -(energy_trans[0]-energy_trans[1])/np.log(fd[0]/fd[1])/boltz_const
+        
+    return data 
              
-        plt.show()
+        
 
 def voigt(lam, sigma, gamma, amp, lam0):
     #sigma = alpha/np.sqrt(2*np.log(2))
@@ -251,8 +254,8 @@ def fitting_bb_data(all_data):
 
         func = Model(pbb)
         result = func.fit(bb, lam=lam[1::], params=p)
-        print(dat.filename)
-        print(result.fit_report())
+        #print(dat.filename)
+        #print(result.fit_report())
         
         dat.bb = bb
         dat.corrected_lam = lam[1::]
@@ -341,8 +344,7 @@ def plot_data(all_data, path):
      
     path = path.replace('/','_')
     pp = PdfPages(path+'_All_Data.pdf')
-    
-    times = range(np.size(all_data))
+    times = []
     lam = np.asarray(all_data[0].corrected_lam)
      
     L, T = np.meshgrid(lam, times)
@@ -350,19 +352,29 @@ def plot_data(all_data, path):
     data = np.zeros([np.size(times), np.size(lam)])
     temps = []
     temps_err = []
+    h_boltz_temps = []
 
-    for t in times:
-        temps.append(all_data[t].temp)
-        temps_err.append(all_data[t].temp_err)
-        for l in range(np.size(lam)):
-            data[t,l] = abs(all_data[t].corrected_counts[l])
-    plt.figure()
-    plt.title('Plot of All Data')
-    plt.xlabel('Wavelength (nm)')
-    plt.ylabel('Time (AU)')
-    plt.pcolormesh(T, L, data, rasterized=True, cmap='hot')
-    plt.colorbar(label='Counts')
-    plt.savefig(pp, format='pdf')
+    count = 0
+    for dat in all_data:
+        if count == 0:
+            first_time = dat.time
+            times.append(0.0)
+            count += 1
+        else:
+            times.append(dat.time-first_time)
+        temps.append(dat.temp)
+        temps_err.append(dat.temp_err)
+        h_boltz_temps.append(dat.H_boltz_temp)
+    #    for l in range(np.size(lam)):
+    #        data[t,l] = abs(all_data[t].corrected_counts[l])
+    times = np.asarray(times)/1000.
+    #plt.figure()
+    #plt.title('Plot of All Data')
+    #plt.xlabel('Wavelength (nm)')
+    #plt.ylabel('Time (AU)')
+    #plt.pcolormesh(T, L, data, rasterized=True, cmap='hot')
+    #plt.colorbar(label='Counts')
+    #plt.savefig(pp, format='pdf')
 
     #plt.figure()
     #plt.title('Plot of All Data')
@@ -375,10 +387,18 @@ def plot_data(all_data, path):
 
 ### Make the time plot of temps
     plt.figure()
-    plt.title('Time vs. Temperature')
-    plt.xlabel('Time (au)')
+    plt.title('Time vs. Temperature from BB')
+    plt.xlabel('Time (sec)')
     plt.ylabel('Temperature (K)')
-    plt.errorbar(range(np.size(temps)),temps, yerr=temps_err, fmt='bo')
+    plt.errorbar(times,temps, yerr=temps_err, fmt='bo')
+    plt.savefig(pp, format='pdf')
+
+    plt.figure()
+    plt.title('Time vs. Temperature from H Peaks')
+    plt.xlabel('Time (sec)')
+    plt.ylabel('Temperature (K)')
+    plt.ylim((0.0, 10000))
+    plt.plot(times,h_boltz_temps, 'bo')
     plt.savefig(pp, format='pdf')
 
     pp.close()
@@ -493,7 +513,7 @@ def parse_input(dirpath):
 
     if not dirpath.endswith('/'):
         dirpath = dirpath+'/'
-    filenames = [f for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
+    filenames = [f for f in sorted(os.listdir(dirpath)) if os.path.isfile(os.path.join(dirpath, f))]
     
     data = []
 
@@ -563,6 +583,31 @@ class Run(object):
                     self.add_data(line)
                 if line.lower().startswith('data'):
                     self.name = line.split()[2]
+		    txt = self.name 
+                    re1='.*?'	# Non-greedy match on filler
+		    re2='\\d+'	# Uninteresting: int
+		    re3='.*?'	# Non-greedy match on filler
+		    re4='\\d+'	# Uninteresting: int
+		    re5='.*?'	# Non-greedy match on filler
+		    re6='(\\d+)'	# Integer Number 1
+		    re7='(-)'	# Any Single Character 1
+		    re8='(\\d+)'	# Integer Number 2
+		    re9='(-)'	# Any Single Character 2
+		    re10='(\\d+)'	# Integer Number 3
+		    re11='(-)'	# Any Single Character 3
+		    re12='(\\d+)'	# Integer Number 4
+
+		    rg = re.compile(re1+re2+re3+re4+re5+re6+re7+re8+re9+re10+re11+re12,re.IGNORECASE|re.DOTALL)
+		    m = rg.search(txt)
+		    if m:
+			int1=float(m.group(1))*3600.*1000.
+			c1=m.group(2)
+			int2=float(m.group(3))*60.*1000.
+			c2=m.group(4)
+			int3=float(m.group(5))*1000.
+			c3=m.group(6)
+			int4=float(m.group(7))
+		    self.time = int1+int2+int3+int4
                 if line.lower().startswith('user'):
                     self.user = line.split()[1]
                 if line.lower().startswith('spectrometer'):
