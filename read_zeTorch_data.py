@@ -38,6 +38,7 @@ def main():
 
     #corrected_data = correct_the_data(all_data)
     corrected_data = fitting_bb_data(all_data)
+    temp_from_H(corrected_data)
 #    gaussian_peak_fitting(all_data, peak_wavelength)
 #    voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
@@ -52,6 +53,55 @@ def main():
     
 #    plot_refined_data(refined_data, directory_path)
 #    plot_data(refined_data, directory_path)
+
+def temp_from_H(data):
+    
+    for dat in data:
+        lam = np.asarray(dat.corrected_lam)
+        counts = np.asarray(dat.corrected_counts)
+       
+        peaks_of_interest = np.array([656., 486.])
+        max_peak_height = []
+        max_peak_lam = []
+        for poi in peaks_of_interest:
+            peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(poi-10.) and
+            lam[i]<(poi+10.)]
+            peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
+            peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
+            
+            p = Parameters()
+            p.add_many(('sigma'     ,        5.0,    True,    0.0,    None,    None),
+                       ('gamma'     ,       1.0,    True,    0.0,      None,    None),
+                       ('amp'     ,        3E4,    True,    0.0,    None,    None),
+                       ('lam0'     ,        poi,    True,    0.0,    None,    None))
+            func = Model(voigt)
+            result = func.fit(peak_counts, lam=peak_lam, params=p)
+            print result.fit_report()
+
+            max_peak_height.append(np.max(result.best_fit))
+            max_peak_lam.append(peak_lam[np.argmax(result.best_fit)])
+            plt.figure()
+            plt.plot(peak_lam,peak_counts, 'b*')
+            plt.plot(peak_lam, result.best_fit)
+
+        max_peak_lam = np.asarray(max_peak_lam)        
+        max_peak_height = np.asarray(max_peak_height)
+        g_weights = np.array([18., 32.])
+        trans_prob = np.array([0.441, 0.08419])
+        energy_trans = np.array([-2.4208E-19, -1.3617E-19])
+
+        boltz_const = 1.38E-23
+
+        fd = energy_trans*max_peak_height/(g_weights*trans_prob)
+        boltz_temp = -(energy_trans[0]-energy_trans[1])/np.log(fd[0]/fd[1])/boltz_const
+        print boltz_temp 
+             
+        plt.show()
+
+def voigt(lam, sigma, gamma, amp, lam0):
+    #sigma = alpha/np.sqrt(2*np.log(2))
+    z = ((lam-lam0)+gamma*1j)/(sigma*np.sqrt(2))
+    return np.real(wofz(z))/(sigma*np.sqrt(2.*np.pi))*amp
 
 def correct_the_data(all_data):
     cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
@@ -102,11 +152,6 @@ def voigt_peak_fitting(all_data, peak_wavelength):
         plt.savefig(pp, format='pdf')
         pp.close()
 
-def voigt(lam, alpha, gamma, lam0, amp):
-    
-    sigma = alpha/np.sqrt(2*np.log(2))
-    z = ((lam-lam0)+gamma*1j)/(sigma*np.sqrt(2))
-    return np.real(wofz(z))/(sigma*np.sqrt(2.*np.pi))
 
 def gaussian_peak_fitting(all_data, peak_wavelength):
     all_data = fitting_bb_data(all_data)
@@ -171,15 +216,15 @@ def fitting_bb_data(all_data):
     """
 
     cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
-    source_data=np.loadtxt(os.getcwd()+'/suspect_calibration_data/Calibrated_Source_Spectral_Output.txt',delimiter=',',skiprows=1)
-    lamp_det = Run()
-    lamp_det.load_file(os.getcwd()+'/suspect_calibration_data/DH-3PlusCalLight-DeuteriumHalogen_HRD10391_13-38-32-533.txt')
-    lamp_det_lam = np.asarray(lamp_det.wavelengths)
-    lamp_det_counts = np.asarray(lamp_det.counts)
+    #source_data=np.loadtxt(os.getcwd()+'/suspect_calibration_data/Calibrated_Source_Spectral_Output.txt',delimiter=',',skiprows=1)
+    #lamp_det = Run()
+    #lamp_det.load_file(os.getcwd()+'/suspect_calibration_data/DH-3PlusCalLight-DeuteriumHalogen_HRD10391_13-38-32-533.txt')
+    #lamp_det_lam = np.asarray(lamp_det.wavelengths)
+    #lamp_det_counts = np.asarray(lamp_det.counts)
     cal_lam = cal_data[:,0].astype(float)
     cal_counts = cal_data[:,1].astype(float)
-    source_lam = source_data[:,0].astype(float)
-    source_counts = source_data[:,1].astype(float)
+    #source_lam = source_data[:,0].astype(float)
+    #source_counts = source_data[:,1].astype(float)
     
     filtered_data = []
     count = 0
