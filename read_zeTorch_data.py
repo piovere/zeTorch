@@ -20,6 +20,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters 
+
 def main():
     """ Reading and Processing the Run Data
     
@@ -32,14 +33,18 @@ def main():
     ### Parse the files in the directory
     all_data = parse_input(directory_path)
 
-    corrected_data = correct_the_data(all_data)
-    peak_wavelength = 655
+    pw = 655
+    #refined_data = refine_data(all_data, pw-10, pw+10)
+
+    #corrected_data = correct_the_data(all_data)
+    corrected_data = fitting_bb_data(all_data)
 #    gaussian_peak_fitting(all_data, peak_wavelength)
-    voigt_peak_fitting(all_data, peak_wavelength)
+#    voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
     plot_data(corrected_data, 'Plot')
+    #plot_refined_data(refined_data, 'Plot')
     
-    print 'Total number of data files: %d' % np.size(all_data)
+    print('Total number of data files: %d' % np.size(all_data))
      
 #    refined_data = refine_data(all_data, starting_wavelength, ending_wavelength)
     
@@ -84,10 +89,8 @@ def voigt_peak_fitting(all_data, peak_wavelength):
 
         func = Model(voigt)
         result_bb = func.fit(peak_counts, lam= peak_lam, params=p)
-        print "With Black Body Subtraction"
-        print 
-        print
-        print result_bb.fit_report()
+        print( "With Black Body Subtraction")
+        print(result_bb.fit_report())
 
         
  
@@ -125,7 +128,7 @@ def gaussian_peak_fitting(all_data, peak_wavelength):
 
         func = Model(gaussian)
         result = func.fit(peak_counts, x=peak_lam, params=p)
-        print result.fit_report()
+        print(result.fit_report())
 
 ### After BB subtraction
         peak_bb_sub_counts = peak_counts - np.asarray(dat.bb[peak_indexes[0]:peak_indexes[-1]])
@@ -138,10 +141,8 @@ def gaussian_peak_fitting(all_data, peak_wavelength):
 
         func = Model(gaussian)
         result_bb = func.fit(peak_bb_sub_counts, x=peak_lam, params=p)
-        print "With Black Body Subtraction"
-        print 
-        print
-        print result_bb.fit_report()
+        print("With Black Body Subtraction")
+        print(result_bb.fit_report())
 
         
  
@@ -181,15 +182,18 @@ def fitting_bb_data(all_data):
     source_counts = source_data[:,1].astype(float)
     
     filtered_data = []
+    count = 0
     for dat in all_data:
+        count += 1
+        print(count)
         counts = np.asarray(dat.counts)
         lam = np.asarray(dat.wavelengths)
         rebinned_cal_counts = rebin(cal_lam, cal_counts, lam)
-        rebinned_counts = rebin(lam, counts, cal_lam)
-        rebinned_source_counts = rebin(source_lam, source_counts, lamp_det_counts)
-        fft_lamp_det_counts = np.fft.fft(lamp_det_counts[1::])
-        fft_lamp_source_counts = np.fft.fft(rebinned_source_counts)
-        cal_calculated = np.fft.ifft(fft_lamp_det_counts/fft_lamp_source_counts)
+        #rebinned_counts = rebin(lam, counts, cal_lam)
+        #rebinned_source_counts = rebin(source_lam, source_counts, lamp_det_counts)
+        #fft_lamp_det_counts = np.fft.fft(lamp_det_counts[1::])
+        #fft_lamp_source_counts = np.fft.fft(rebinned_source_counts)
+        #cal_calculated = np.fft.ifft(fft_lamp_det_counts/fft_lamp_source_counts)
         corrected_counts = counts[1::]*rebinned_cal_counts
         #deconc_counts = sig.deconvolve(rebinned_counts, cal_counts[1::])
         bb = sig.medfilt(corrected_counts,kernel_size=81)
@@ -202,30 +206,34 @@ def fitting_bb_data(all_data):
 
         func = Model(pbb)
         result = func.fit(bb, lam=lam[1::], params=p)
-        
-        print result.fit_report()
+        print(dat.filename)
+        print(result.fit_report())
         
         dat.bb = bb
+        dat.corrected_lam = lam[1::]
         dat.corrected_counts = corrected_counts
+        dat.temp = result.params['T'].value
+        dat.temp_err = result.params['T'].stderr
+        dat.aic = result.aic
         filtered_data.append(dat) 
 
-        pp = PdfPages('Filter_Test.pdf')
-        plt.figure()
-        plt.plot(lam,counts, 'k-', label='Raw Data')
-        plt.plot(lam[1::], corrected_counts, 'm-', label='Corrected Data')
-        ##plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
-        ##plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
-        ##plt.plot(lam[1::], bb, 'r-', label='Filtered Data')
-        plt.plot(lam[1::], result.best_fit, 'b-', label='Fit Filtered Data')
-        plt.legend()
-        plt.savefig(pp, format='pdf')
+       # pp = PdfPages('Filter_Test.pdf')
+       # plt.figure()
+       # plt.plot(lam,counts, 'k-', label='Raw Data')
+       # plt.plot(lam[1::], corrected_counts, 'm-', label='Corrected Data')
+       # ##plt.plot(cal_lam[1::], deconc_counts[1], 'm-', label='Deconc Data')
+       # ##plt.plot(cal_lam[1::], rebinned_counts, 'c--', label='Deconc Data')
+       # ##plt.plot(lam[1::], bb, 'r-', label='Filtered Data')
+       # plt.plot(lam[1::], result.best_fit, 'b-', label='Fit Filtered Data')
+       # plt.legend()
+       # plt.savefig(pp, format='pdf')
       
-        plt.figure()
-       # plt.plot(lamp_det_lam[1::], cal_calculated, 'ko', label='Calculated') 
-        plt.plot(cal_lam, cal_counts, 'b*', label='From File') 
-        plt.legend()
-        plt.savefig(pp, format='pdf')
-    pp.close() 
+       # plt.figure()
+       ## plt.plot(lamp_det_lam[1::], cal_calculated, 'ko', label='Calculated') 
+       # plt.plot(cal_lam, cal_counts, 'b*', label='From File') 
+       # plt.legend()
+       # plt.savefig(pp, format='pdf')
+    #pp.close() 
 
     return filtered_data
 
@@ -274,6 +282,7 @@ def plot_filter(all_data):
     plt.legend()
     plt.savefig(pp, format='pdf')
     pp.close()
+
 def plot_data(all_data, path):
     """ Making a heatmap plot of all the data in a run along with individual plots of each timestep.
 
@@ -294,8 +303,12 @@ def plot_data(all_data, path):
     L, T = np.meshgrid(lam, times)
 
     data = np.zeros([np.size(times), np.size(lam)])
+    temps = []
+    temps_err = []
 
     for t in times:
+        temps.append(all_data[t].temp)
+        temps_err.append(all_data[t].temp_err)
         for l in range(np.size(lam)):
             data[t,l] = abs(all_data[t].corrected_counts[l])
     plt.figure()
@@ -304,6 +317,23 @@ def plot_data(all_data, path):
     plt.ylabel('Time (AU)')
     plt.pcolormesh(T, L, data, rasterized=True, cmap='hot')
     plt.colorbar(label='Counts')
+    plt.savefig(pp, format='pdf')
+
+    #plt.figure()
+    #plt.title('Plot of All Data')
+    #plt.xlabel('Wavelength (nm)')
+    #plt.ylabel('Time (AU)')
+    #plt.zlabel('Counts')
+    #Axes3D.plot_surface(T,L, data)
+    #plt.savefig(pp, format='pdf')
+    #plt.show()
+
+### Make the time plot of temps
+    plt.figure()
+    plt.title('Time vs. Temperature')
+    plt.xlabel('Time (au)')
+    plt.ylabel('Temperature (K)')
+    plt.errorbar(range(np.size(temps)),temps, yerr=temps_err, fmt='bo')
     plt.savefig(pp, format='pdf')
 
     pp.close()
@@ -338,6 +368,7 @@ def plot_refined_data(refined_data, path):
     plt.ylabel('Peak Areas (nm*counts)')
     plt.plot(range(np.size(peak_areas)),peak_areas, 'bo')
     plt.savefig(pp, format='pdf')
+
 
 ### Make the time plot of peak_fwhms
     #plt.figure()
