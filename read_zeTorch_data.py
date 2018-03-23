@@ -20,7 +20,6 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from lmfit import Model, Parameters 
-import re
 
 def main():
     """ Reading and Processing the Run Data
@@ -533,7 +532,8 @@ class Run(object):
     This class contains every piece of information for a single data file.
 
     Attributes:
-    self.filename -- String of the filename 
+    self.filename -- String of the filename
+    self.time -- Float of the time data in milliseconds 
     self.name -- String of name within the file
     self.user -- String of the username
     self.spectrometer -- String of the spectrometer name
@@ -558,6 +558,7 @@ class Run(object):
     
     def __init__(self):
         self.filename = ''
+        self.time = 0.0
         self.name = ''
         self.user = ''
         self.spectrometer = ''
@@ -573,6 +574,7 @@ class Run(object):
         self.counts = []
     
     def load_file(self, filename):
+        re = __import__('re')
         self.filename = filename
         with open(filename, 'r') as f:
             data = f.readlines()
