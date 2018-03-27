@@ -1,5 +1,8 @@
 """ Contains class for reading in one run datafile.
 """
+import re 
+import numpy as np
+from scipy.interpolate import interp1d
 
 class Run(object):
     """ Class for one run datafile's contents.
@@ -48,8 +51,38 @@ class Run(object):
         self.wavelengths = []
         self.counts = []
     
+    def calibrate_data(self, calibration_file, lamp_det_file):
+        cal_data = np.loadtxt(calibration_file, delimiter=',', skiprows = 1)
+        lamp_data = np.loadtxt(lamp_det_file, skiprows= 14)
+        lam = np.asarray(self.wavelengths)
+        counts = np.asarray(self.counts)
+        
+        min_lam = max(cal_data[:,0].min(), lamp_data[:,0].min(), np.min(lam))
+        max_lam = min(np.max(cal_data[:,0]), np.max(lamp_data[:,0]), np.max(lam))
+       
+        indexes = [i for i in range(np.size(cal_data[:,0])) if cal_data[i,0] > min_lam and cal_data[i,0]< max_lam] 
+        slashed_cal_data = cal_data[indexes,:]
+        indexes = [i for i in range(np.size(lamp_data[:,0])) if lamp_data[i,0] > min_lam and lamp_data[i,0]< max_lam] 
+        slashed_lamp_data = lamp_data[indexes,:]
+        indexes = [i for i in range(np.size(lam)) if lam[i] > min_lam and lam[i]< max_lam] 
+        slashed_lam = lam[indexes]
+        slashed_counts = counts[indexes]
+
+        print(slashed_cal_data.shape)
+
+        cal_interp = interp1d(slashed_cal_data[:,0], slashed_cal_data[:,1], bounds_error=False, fill_value=1.0)
+        lamp_interp = interp1d(slashed_lamp_data[:,0], slashed_lamp_data[:,1], bounds_error=False, fill_value=1.0)
+        meas_interp = interp1d(slashed_lam, slashed_counts, bounds_error=False, fill_value=1.0)
+        
+        print(slashed_lam[-1])
+        print(slashed_cal_data[-1,0])
+        print(slashed_lamp_data[-1,0])
+
+        self.calibrated_data = np.dstack((slashed_lam, cal_interp(slashed_lam) * slashed_counts / lamp_interp(slashed_lam)))[0]
+        np.savetxt('might_be_calibrated.txt', self.calibrated_data)
+        
+        
     def load_file(self, filename):
-        re = __import__('re')
         self.filename = filename
         with open(filename, 'r') as f:
             data = f.readlines()
