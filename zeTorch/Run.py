@@ -78,8 +78,10 @@ class Run(object):
         print(slashed_cal_data[-1,0])
         print(slashed_lamp_data[-1,0])
 
-        self.calibrated_data = np.dstack((slashed_lam, cal_interp(slashed_lam) * slashed_counts / lamp_interp(slashed_lam)))[0]
-        np.savetxt('might_be_calibrated.txt', self.calibrated_data)
+        calibrated_data = np.dstack((slashed_lam, cal_interp(slashed_lam) * slashed_counts * lamp_interp(slashed_lam)))[0]
+        self.calibrated_lam = calibrated_data[:,0]
+        self.calibrated_counts = calibrated_data[:,1]
+        #np.savetxt('might_be_calibrated.txt', calibrated_data)
         
         
     def load_file(self, filename):
