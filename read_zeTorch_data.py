@@ -29,91 +29,91 @@ def main():
     This definition is where the data is parsed and filtered by other definitions. It ends with the
     plotting of the data by another set of definitions. 
     """
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/01 Argon Pure/' 
-    directories = np.array(['20170803', 
-                             '20170804', 
-                             '20170807', 
-                             '20170809', 
-                             '20170906', 
-                             '20171009']) 
-    filename = 'Low_Position_Argon_Pure.pdf'
-    pp = PdfPages(filename)
-     
-    for i in range(np.size(directories)):
-        directory_path = path+directories[i]+'/'
-        print directory_path
-        title = directories[i]
-        all_data = parse_input(directory_path)
-        for dat in all_data:
-            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
-        corrected_data = fitting_bb_data(all_data)
-        boltz_ar(corrected_data, pp, title)
+    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/01 Argon Pure/' 
+    #directories = np.array(['20170803', 
+    #                         '20170804', 
+    #                         '20170807', 
+    #                         '20170809', 
+    #                         '20170906', 
+    #                         '20171009']) 
+    #filename = 'Low_Position_Argon_Pure.pdf'
+    #pp = PdfPages(filename)
+    # 
+    #for i in range(np.size(directories)):
+    #    directory_path = path+directories[i]+'/'
+    #    print directory_path
+    #    title = directories[i]
+    #    all_data = parse_input(directory_path)
+    #    for dat in all_data:
+    #        dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+    #    corrected_data = fitting_bb_data(all_data)
+    #    boltz_ar(corrected_data, pp, title)
+    #
+    #pp.close()
+    # 
+    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/02 Argon Hyd Torch/'
+    #directories = np.array(['20170803',  
+    #                         '20170804', 
+    #                         '20170807', 
+    #                         '20170809', 
+    #                         '20171009']) 
+    #filename = 'Low_Position_Argon_Hyd_Torch.pdf'
+    #pp = PdfPages(filename)
+    # 
+    #for i in range(np.size(directories)):
+    #    directory_path = path+directories[i]+'/'
+    #    print directory_path
+    #    title = directories[i]
+    #    all_data = parse_input(directory_path)
+    #    for dat in all_data:
+    #        dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+    #    corrected_data = fitting_bb_data(all_data)
+    #    boltz_ar(corrected_data, pp, title)
+    #    boltz_H(corrected_data, pp, title)
+    #
+    #pp.close() 
+    #
+    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/03 Powder NY/'
+    #directories = np.array(['20170803',  
+    #                         '20170804', 
+    #                         '20171009',
+    #                         '20171101']) 
+    #filename = 'Low_Position_Powder_NY.pdf'
+    #pp = PdfPages(filename)
+    # 
+    #for i in range(np.size(directories)):
+    #    directory_path = path+directories[i]+'/'
+    #    print directory_path
+    #    title = directories[i]
+    #    all_data = parse_input(directory_path)
+    #    for dat in all_data:
+    #        dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+    #    corrected_data = fitting_bb_data(all_data)
+    #    boltz_ar(corrected_data, pp, title)
+    #    boltz_H(corrected_data, pp, title)
+    #
+    #pp.close() 
+    #
+    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/04 Powder Trin/'
+    #directories = np.array(['20170807',  
+    #                         '20170809']) 
+    #filename = 'Low_Position_Powder_Trin.pdf'
+    #pp = PdfPages(filename)
+    # 
+    #for i in range(np.size(directories)):
+    #    directory_path = path+directories[i]+'/'
+    #    print directory_path
+    #    title = directories[i]
+    #    all_data = parse_input(directory_path)
+    #    for dat in all_data:
+    #        dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+    #    corrected_data = fitting_bb_data(all_data)
+    #    boltz_ar(corrected_data, pp, title)
+    #    boltz_H(corrected_data, pp, title)
+    #
+    #pp.close() 
     
-    pp.close()
-     
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/02 Argon Hyd Torch/'
-    directories = np.array(['20170803',  
-                             '20170804', 
-                             '20170807', 
-                             '20170809', 
-                             '20171009']) 
-    filename = 'Low_Position_Argon_Hyd_Torch.pdf'
-    pp = PdfPages(filename)
-     
-    for i in range(np.size(directories)):
-        directory_path = path+directories[i]+'/'
-        print directory_path
-        title = directories[i]
-        all_data = parse_input(directory_path)
-        for dat in all_data:
-            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
-        corrected_data = fitting_bb_data(all_data)
-        boltz_ar(corrected_data, pp, title)
-        boltz_H(corrected_data, pp, title)
-    
-    pp.close() 
-    
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/03 Powder NY/'
-    directories = np.array(['20170803',  
-                             '20170804', 
-                             '20171009',
-                             '20171101']) 
-    filename = 'Low_Position_Powder_NY.pdf'
-    pp = PdfPages(filename)
-     
-    for i in range(np.size(directories)):
-        directory_path = path+directories[i]+'/'
-        print directory_path
-        title = directories[i]
-        all_data = parse_input(directory_path)
-        for dat in all_data:
-            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
-        corrected_data = fitting_bb_data(all_data)
-        boltz_ar(corrected_data, pp, title)
-        boltz_H(corrected_data, pp, title)
-    
-    pp.close() 
-    
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/04 Powder Trin/'
-    directories = np.array(['20170807',  
-                             '20170809']) 
-    filename = 'Low_Position_Powder_Trin.pdf'
-    pp = PdfPages(filename)
-     
-    for i in range(np.size(directories)):
-        directory_path = path+directories[i]+'/'
-        print directory_path
-        title = directories[i]
-        all_data = parse_input(directory_path)
-        for dat in all_data:
-            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
-        corrected_data = fitting_bb_data(all_data)
-        boltz_ar(corrected_data, pp, title)
-        boltz_H(corrected_data, pp, title)
-    
-    pp.close() 
-    
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/05 Powder Silica'
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/05 Powder Silica/'
     directories = np.array(['20170906'])  
     filename = 'Low_Position_Powder_Silica.pdf'
     pp = PdfPages(filename)
@@ -130,7 +130,7 @@ def main():
     
     pp.close() 
     
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/01 Argon Pure'
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/01 Argon Pure/'
     directories = np.array(['20171114',
                             '20171201',
                             '20180221',
@@ -153,7 +153,7 @@ def main():
     
     pp.close() 
     
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/02 Argon Hyd Torch'
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/02 Argon Hyd Torch/'
     directories = np.array(['20171113', 
                             '20171114', 
                             '20171201', 
@@ -177,7 +177,7 @@ def main():
     
     pp.close() 
     
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/03 Powder NY'
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/03 Powder NY/'
     directories = np.array(['20171113', 
                             '20171114', 
                             '20171201', 
@@ -199,7 +199,7 @@ def main():
     
     pp.close() 
     
-    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/04 Powder Trin'
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/04 Powder Trin/'
     directories = np.array(['20180320']) 
       
     filename = 'Elevated_Powder_Trin.pdf'
@@ -303,9 +303,11 @@ def boltz_H(data, pp, plot_title ):
         #indexs = np.array([1, 3, 7, 8])
         #y_point = np.concatenate((y_point,np.asarray([y[i] for i in indexs] ))) 
         #x_point = np.concatenate((x_point,np.asarray([e[i] for i in indexs] ))) 
+        y_point = np.concatenate((y_point,y )) 
+        x_point = np.concatenate((x_point,e)) 
 
-    #e = np.asarray(x_point)
-    #y = np.asarray(y_point)
+    e = np.asarray(x_point)
+    y = np.asarray(y_point)
     #slope, intercept, r_value, p_value, std_err = stats.linregress(np.asarray(e_k),np.asarray(y))
     slope, intercept, r_value, p_value, std_err = stats.linregress(e[e.argsort()],y[e.argsort()])
     
