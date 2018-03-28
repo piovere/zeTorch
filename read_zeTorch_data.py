@@ -29,93 +29,210 @@ def main():
     This definition is where the data is parsed and filtered by other definitions. It ends with the
     plotting of the data by another set of definitions. 
     """
-    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/01 Argon Pure/' 
-    #directories = np.array(['20170803']) 
-    ##                         '20170804', 
-    ##                         '20170807', 
-    ##                         '20170809', 
-    ##                         '20170906', 
-    ##                         '20171009']) 
-    #filename = 'Low_Position_Argon_Pure.pdf'
-    #pp = PdfPages(filename)
-    # 
-    #for i in range(np.size(directories)):
-    #    directory_path = path+directories[i]+'/'
-    #    print directory_path
-    #    title = directories[i]
-    #    all_data = parse_input(directory_path)
-    #    corrected_data = fitting_bb_data(all_data)
-    #    boltz_ar(corrected_data, pp, title)
-    #
-    #pp.close()
-    # 
-    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/02 Argon Hyd Torch/'
-    #directories = np.array(['20170803',  
-    #                         '20170804', 
-    #                         '20170807', 
-    #                         '20170809', 
-    #                         '20171009']) 
-    #filename = 'Low_Position_Argon_Hyd_Torch.pdf'
-    #pp = PdfPages(filename)
-    # 
-    #for i in range(np.size(directories)):
-    #    directory_path = path+directories[i]+'/'
-    #    print directory_path
-    #    title = directories[i]
-    #    all_data = parse_input(directory_path)
-    #    corrected_data = fitting_bb_data(all_data)
-    #    boltz_ar(corrected_data, pp, title)
-    #
-    #pp.close() 
-    #
-    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/03 Powder NY/'
-    #directories = np.array(['20170803',  
-    #                         '20170804', 
-    #                         '20171009',
-    #                         '20171101']) 
-    #filename = 'Low_Position_Powder_NY.pdf'
-    #pp = PdfPages(filename)
-    # 
-    #for i in range(np.size(directories)):
-    #    directory_path = path+directories[i]+'/'
-    #    print directory_path
-    #    title = directories[i]
-    #    all_data = parse_input(directory_path)
-    #    corrected_data = fitting_bb_data(all_data)
-    #    boltz_ar(corrected_data, pp, title)
-    #
-    #pp.close() 
-    #
-    #path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/04 Powder Trin/'
-    #directories = np.array(['20170807',  
-    #                         '20170809']) 
-    #filename = 'Low_Position_Powder_Trin.pdf'
-    #pp = PdfPages(filename)
-    # 
-    #for i in range(np.size(directories)):
-    #    directory_path = path+directories[i]+'/'
-    #    print directory_path
-    #    title = directories[i]
-    #    all_data = parse_input(directory_path)
-    #    corrected_data = fitting_bb_data(all_data)
-    #    boltz_ar(corrected_data, pp, title)
-    #
-    #pp.close() 
-    directory_path = sys.argv[1]    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/01 Argon Pure/' 
+    directories = np.array(['20170803', 
+                             '20170804', 
+                             '20170807', 
+                             '20170809', 
+                             '20170906', 
+                             '20171009']) 
+    filename = 'Low_Position_Argon_Pure.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+    
+    pp.close()
+     
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/02 Argon Hyd Torch/'
+    directories = np.array(['20170803',  
+                             '20170804', 
+                             '20170807', 
+                             '20170809', 
+                             '20171009']) 
+    filename = 'Low_Position_Argon_Hyd_Torch.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/03 Powder NY/'
+    directories = np.array(['20170803',  
+                             '20170804', 
+                             '20171009',
+                             '20171101']) 
+    filename = 'Low_Position_Powder_NY.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/04 Powder Trin/'
+    directories = np.array(['20170807',  
+                             '20170809']) 
+    filename = 'Low_Position_Powder_Trin.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/1 Low Position/05 Powder Silica'
+    directories = np.array(['20170906'])  
+    filename = 'Low_Position_Powder_Silica.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/01 Argon Pure'
+    directories = np.array(['20171114',
+                            '20171201',
+                            '20180221',
+                            '20180222',
+                            '20180320'])
+    
+      
+    filename = 'Elevated_Argon_Pure.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/02 Argon Hyd Torch'
+    directories = np.array(['20171113', 
+                            '20171114', 
+                            '20171201', 
+                            '20180221', 
+                            '20180222', 
+                            '20180320']) 
+      
+    filename = 'Elevated_Argon_Hyd_Torch.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/03 Powder NY'
+    directories = np.array(['20171113', 
+                            '20171114', 
+                            '20171201', 
+                            '20180222']) 
+      
+    filename = 'Elevated_Powder_NY.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    
+    path = '/Users/tuckermcclanahan/Google_Drive/PhD/Eriks_Data/zeTorch/Thesis Data/2 Elevated/04 Powder Trin'
+    directories = np.array(['20180320']) 
+      
+    filename = 'Elevated_Powder_Trin.pdf'
+    pp = PdfPages(filename)
+     
+    for i in range(np.size(directories)):
+        directory_path = path+directories[i]+'/'
+        print directory_path
+        title = directories[i]
+        all_data = parse_input(directory_path)
+        for dat in all_data:
+            dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+        corrected_data = fitting_bb_data(all_data)
+        boltz_ar(corrected_data, pp, title)
+        boltz_H(corrected_data, pp, title)
+    
+    pp.close() 
+    #directory_path = sys.argv[1]    
 
-    ### Parse the files in the directory
-    all_data = parse_input(directory_path)
-    for dat in all_data:
-        dat.calibrate_data('./suspect_calibration_data/Calibrated_Source_Spectral_Output.txt', './suspect_calibration_data/DH-3PlusCalLight-DeuteriumHalogen_HRD10391_13-38-32-533.txt')
-    #pw = 655
-    #refined_data = refine_data(all_data, pw-10, pw+10)
+    #### Parse the files in the directory
+    #all_data = parse_input(directory_path)
+    #for dat in all_data:
+    #    #dat.calibrate_data('./suspect_calibration_data/Calibrated_Source_Spectral_Output.txt', './suspect_calibration_data/DH-3PlusCalLight-DeuteriumHalogen_HRD10391_13-38-32-533.txt')
+    #    dat.calibrate_data('./suspect_calibration_data/CalibrationFile.txt')
+    ##pw = 655
+    ##refined_data = refine_data(all_data, pw-10, pw+10)
 
-    #corrected_data = correct_the_data(all_data)
-    corrected_data = fitting_bb_data(all_data)
-    #data = temp_from_H(corrected_data)
-    #data = erics_module(corrected_data)
-    data = boltz_ar(corrected_data)
-    data = boltz_H(corrected_data)
+    ##corrected_data = correct_the_data(all_data)
+    #corrected_data = fitting_bb_data(all_data)
+    ##data = temp_from_H(corrected_data)
+    ##data = erics_module(corrected_data)
+    #data = boltz_ar(corrected_data)
+    #data = boltz_H(corrected_data)
 #    gaussian_peak_fitting(all_data, peak_wavelength)
 #    voigt_peak_fitting(all_data, peak_wavelength)
 #    plot_filter(all_data)
@@ -131,11 +248,10 @@ def main():
 #    plot_refined_data(refined_data, directory_path)
 #    plot_data(refined_data, directory_path)
 
-def boltz_H(data):
+def boltz_H(data, pp, plot_title ):
 
     y_point = []
     x_point = []
-    pp = PdfPages('Hydrogen_Peaks_Testing.pdf')
     for dat in data:
         lam = np.asarray(dat.calibrated_lam)
         raw_counts = dat.calibrated_counts - np.asarray(dat.bb)
@@ -168,12 +284,12 @@ def boltz_H(data):
             #max_peak_height.append(np.max(result.best_fit))
             max_peak_lam.append(result.params['lam0'].value)
             
-            plt.figure()
-            plt.xlabel('Wavelength (nm)')
-            plt.ylabel('Intensity (1/nm)')
-            plt.plot(peak_lam,peak_counts, 'b*')
-            plt.plot(peak_lam, result.best_fit, 'k-')
-            plt.savefig(pp, format='pdf')
+            #plt.figure()
+            #plt.xlabel('Wavelength (nm)')
+            #plt.ylabel('Intensity (1/nm)')
+            #plt.plot(peak_lam,peak_counts, 'b*')
+            #plt.plot(peak_lam, result.best_fit, 'k-')
+            #plt.savefig(pp, format='pdf')
 
         max_peak_lam = np.asarray(max_peak_lam)        
         max_peak_height = np.asarray(max_peak_height)
@@ -201,22 +317,19 @@ def boltz_H(data):
     plt.figure()
     #plt.plot(e_k,y, '*')
     #plt.plot(e_k, y_line, '-')
-    plt.title(' Calc Temp = %1.4E K' % (temp))
-    #plt.title(plot_title+' Calc Temp = %1.4E K' % (temp))
+    #plt.title(' Calc Temp = %1.4E K' % (temp))
+    plt.title(plot_title+' H Calc Temp = %1.4E K' % (temp))
     plt.xlabel('Delta E (1/cm)')
     plt.ylabel('$\ln((I\lambda)/(g_k*A))$')
     plt.plot(e,y, '*')
     plt.plot(e, y_line, '-')
     plt.savefig(pp, format='pdf')
 
-    pp.close()
 
-#def boltz_ar(data, pp, plot_title):
-def boltz_ar(data):
+def boltz_ar(data, pp, plot_title):
 
     y_point = []
     x_point = []
-    pp = PdfPages('Argon_Peaks_Testing.pdf')
     for dat in data:
         lam = np.asarray(dat.calibrated_lam)
         raw_counts = dat.calibrated_counts - np.asarray(dat.bb)
@@ -249,12 +362,12 @@ def boltz_ar(data):
             #max_peak_height.append(np.max(result.best_fit))
             max_peak_lam.append(result.params['lam0'].value)
             
-            plt.figure()
-            plt.xlabel('Wavelength (nm)')
-            plt.ylabel('Intensity (1/nm)')
-            plt.plot(peak_lam,peak_counts, 'b*')
-            plt.plot(peak_lam, result.best_fit, 'k-')
-            plt.savefig(pp, format='pdf')
+            #plt.figure()
+            #plt.xlabel('Wavelength (nm)')
+            #plt.ylabel('Intensity (1/nm)')
+            #plt.plot(peak_lam,peak_counts, 'b*')
+            #plt.plot(peak_lam, result.best_fit, 'k-')
+            #plt.savefig(pp, format='pdf')
 
         max_peak_lam = np.asarray(max_peak_lam)        
         max_peak_height = np.asarray(max_peak_height)
@@ -265,12 +378,12 @@ def boltz_ar(data):
         y = np.log(max_peak_height*max_peak_lam/(g_k*A))
         e = e_k-e_i
         
-        #indexs = np.array([1, 3, 7, 8])
-        #y_point = np.concatenate((y_point,np.asarray([y[i] for i in indexs] ))) 
-        #x_point = np.concatenate((x_point,np.asarray([e[i] for i in indexs] ))) 
+        indexs = np.array([1, 3, 7, 8])
+        y_point = np.concatenate((y_point,np.asarray([y[i] for i in indexs] ))) 
+        x_point = np.concatenate((x_point,np.asarray([e[i] for i in indexs] ))) 
 
-    #e = np.asarray(x_point)
-    #y = np.asarray(y_point)
+    e = np.asarray(x_point)
+    y = np.asarray(y_point)
     #slope, intercept, r_value, p_value, std_err = stats.linregress(np.asarray(e_k),np.asarray(y))
     slope, intercept, r_value, p_value, std_err = stats.linregress(e[e.argsort()],y[e.argsort()])
     
@@ -282,203 +395,17 @@ def boltz_ar(data):
     plt.figure()
     #plt.plot(e_k,y, '*')
     #plt.plot(e_k, y_line, '-')
-    plt.title(' Calc Temp = %1.4E K' % (temp))
-    #plt.title(plot_title+' Calc Temp = %1.4E K' % (temp))
+    plt.title(plot_title+' Ar Calc Temp = %1.4E K' % (temp))
     plt.xlabel('Delta E (1/cm)')
     plt.ylabel('$\ln((I\lambda)/(g_k*A))$')
     plt.plot(e,y, '*')
     plt.plot(e, y_line, '-')
     plt.savefig(pp, format='pdf')
 
-    pp.close()
-    
-
-def erics_module(data):
-
-    y_point = []
-    x_point = []
-    for dat in data:
-        lam = np.asarray(dat.corrected_lam)
-        counts = np.asarray(dat.corrected_counts)- np.asarray(dat.bb)
-        
-        pp = PdfPages('Argon_Temp_Calc.pdf')
-        peaks_of_interest = np.array([810.035, 762.182, 749.397, 737.032, 705.584, 695.367, 839.292, 601.445, 910.828]) 
-        max_peak_height = []
-        max_peak_lam = []
-        for poi in peaks_of_interest:
-            peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(poi-5.) and
-            lam[i]<(poi+5.)]
-            peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
-            peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
-            
-            p = Parameters()
-            p.add_many(('sigma'     ,        5.0,    True,    0.0,    None,    None),
-                       ('gamma'     ,       1.0,    True,    0.0,      None,    None),
-                       ('amp'     ,        3E4,    True,    0.0,    None,    None),
-                       ('lam0'     ,        poi,    True,    0.0,    None,    None))
-            func = Model(voigt)
-            result = func.fit(peak_counts, lam=peak_lam, params=p)
-            print result.fit_report()
-
-            peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(poi-2.) and
-            lam[i]<(poi+2.)]
-            #max_peak_height.append(np.trapz(result.eval(lam=lam[peak_indexes[0]:peak_indexes[-1]]), x= lam[peak_indexes[0]:peak_indexes[-1]]))
-            #max_peak_height.append(np.trapz(result.best_fit, x = peak_lam))
-            max_peak_height.append(np.trapz(peak_counts, x = peak_lam))
-            max_peak_lam.append(result.params['lam0'].value)
-            plt.figure()
-            plt.xlabel('Wavelength (nm)')
-            plt.ylabel('Counts')
-            plt.plot(peak_lam,peak_counts, 'b*')
-            plt.plot(peak_lam, result.best_fit)
-            plt.savefig(pp, format='pdf')
-
-        max_peak_lam = np.asarray(max_peak_lam)        
-        max_peak_height = np.asarray(max_peak_height)
-        
-        ### Source: Atomic Transition Probabilities Na- Ca NSRDS-NBS 22 Volume II
-        #g_k = np.array([7.0, 5., 1.0, 5., 5., 3., 5., 9., 3.]) # no units
-        #A = np.array([ 0.366,    0.274,   0.472,   0.087,   0.0395,  0.067,  0.244,    0.0246,   0.212]) # 1E8 1/s
-        #e_k = np.array([105463., 106238., 108723., 107290., 107290., 107496., 107290., 122036., 104102.]) # 1/cm
-        
-        ###  
-        g_k = np.array([7.0, 5., 1.0, 5., 5., 3., 5., 9., 3.]) # no units
-        A = np.array([ 0.366,    0.274,   0.472,   0.087,   0.0395,  0.067,  0.244,    0.0246,   0.212]) # 1E8 1/s
-        e_k = np.array([105463., 106238., 108723., 107290., 107290., 107496., 107290., 122036., 104102.]) # 1/cm
-
-        y = np.log(max_peak_height*max_peak_lam/(g_k*A))
-        
-
-        for i in range(np.size(peaks_of_interest)):
-            count = 0
-            for j in range(np.size(peaks_of_interest)):
-                if i==j or j<i or i==6 or j==6 or i==7 or j==7:
-                    continue
-                print i, j
-                y_point.append(y[i]-y[j])
-                x_point.append(-1.*(e_k[i]-e_k[j]))
-        
-    slope, intercept, r_value, p_value, std_err = stats.linregress(np.asarray(x_point),np.asarray(y_point))
-    
-    boltzmann = 0.69503476
-    temp = -1./(slope*boltzmann)
-    print temp
-     
-    y = slope*np.asarray(x_point)+intercept
-    
-    plt.figure()
-    plt.ylim([-1,1])
-    plt.plot(x_point,y_point, '*')
-    plt.plot(x_point, y, '-')
-    plt.savefig(pp, format='pdf')
-    
-    pp.close()
-
-def temp_from_H(data):
-    
-    boltz_temps = [] 
-    for dat in data:
-        lam = np.asarray(dat.corrected_lam)
-        counts = np.asarray(dat.corrected_counts)
-       
-        pp = PdfPages('Voigt_Fit.pdf')
-        peaks_of_interest = np.array([656., 486.])
-        max_peak_height = []
-        max_peak_lam = []
-        for poi in peaks_of_interest:
-            peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(poi-10.) and
-            lam[i]<(poi+10.)]
-            peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
-            peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
-            
-            p = Parameters()
-            p.add_many(('sigma'     ,        5.0,    True,    0.0,    None,    None),
-                       ('gamma'     ,       1.0,    True,    0.0,      None,    None),
-                       ('amp'     ,        3E4,    True,    0.0,    None,    None),
-                       ('lam0'     ,        poi,    True,    0.0,    None,    None))
-            func = Model(voigt)
-            result = func.fit(peak_counts, lam=peak_lam, params=p)
-            print result.fit_report()
-
-            max_peak_height.append(np.max(result.best_fit))
-            max_peak_lam.append(peak_lam[np.argmax(result.best_fit)])
-            plt.figure()
-            plt.xlabel('Wavelength (nm)')
-            plt.ylabel('Counts')
-            plt.plot(peak_lam,peak_counts, 'b*')
-            plt.plot(peak_lam, result.best_fit)
-            plt.savefig(pp, format='pdf')
-
-        pp.close()
-        max_peak_lam = np.asarray(max_peak_lam)        
-        max_peak_height = np.asarray(max_peak_height)
-        g_weights = np.array([18., 32.])
-        trans_prob = np.array([0.441, 0.08419])
-        energy_trans = np.array([-2.4208E-19, -1.3617E-19])
-
-        boltz_const = 1.38E-23
-
-        fd = energy_trans*max_peak_height/(g_weights*trans_prob)
-        dat.H_boltz_temp = -(energy_trans[0]-energy_trans[1])/np.log(fd[0]/fd[1])/boltz_const
-        
-    return data 
-             
-        
-
 def voigt(lam, sigma, gamma, amp, lam0):
     #sigma = alpha/np.sqrt(2*np.log(2))
     z = ((lam-lam0)+gamma*1j)/(sigma*np.sqrt(2))
     return np.real(wofz(z))/(sigma*np.sqrt(2.*np.pi))*amp
-
-def correct_the_data(all_data):
-    cal_data = np.loadtxt(os.getcwd()+'/suspect_calibration_data/CalibrationFile.txt')
-    cal_lam = cal_data[:,0].astype(float)
-    cal_counts = cal_data[:,1].astype(float)
-    dat = all_data[0]
-    lam = np.asarray(dat.wavelengths)
-    rebinned_cal_counts = rebin(cal_lam, cal_counts, lam)
-    corrected_data = []
-    for dat in all_data:
-        counts = np.asarray(dat.counts)
-        dat.corrected_counts = counts[1::]*rebinned_cal_counts
-        dat.corrected_lam = lam[1::]
-        corrected_data.append(dat) 
-    return corrected_data 
-
-def voigt_peak_fitting(all_data, peak_wavelength):
-    all_data = fitting_bb_data(all_data)
-    for dat in all_data:
-        counts = np.asarray(dat.corrected_counts)
-        lam = np.asarray(dat.wavelengths)
-        peak_indexes = [i for i in range(np.size(lam)) if lam[i]>(peak_wavelength-10.) and
-        lam[i]<(peak_wavelength+10.)]
-        peak_lam = lam[peak_indexes[0]:peak_indexes[-1]] 
-        peak_counts = counts[peak_indexes[0]:peak_indexes[-1]] 
-        
-### After BB subtraction
-        peak_bb_sub_counts = peak_counts - np.asarray(dat.bb[peak_indexes[0]:peak_indexes[-1]])
-        p = Parameters()
-         #          (Name   ,        Value,    Vary,    Min,     Max,    Expr)
-        p.add_many(('alpha'     ,        3.0,    True,    0.0,    None,    None),
-                   ('gamma'     ,       3.0,    True,    0.0,      None,    None),
-                   ('amp'     ,        70000.,    True,    0.0,    None,    None),
-                   ('lam0'     ,        peak_wavelength,    True,    None,    None,    None))
-
-        func = Model(voigt)
-        result_bb = func.fit(peak_counts, lam= peak_lam, params=p)
-        print( "With Black Body Subtraction")
-        print(result_bb.fit_report())
-
-        
- 
-        pp = PdfPages('Voigt_Fit.pdf')
-        plt.figure()
-        plt.plot(peak_lam,peak_bb_sub_counts, 'ko', label='Peak BB Sub Data')
-        plt.plot(peak_lam, result_bb.best_fit, 'm-', label='Best Fit Peak BB Sub Data')
-        plt.legend()
-        plt.savefig(pp, format='pdf')
-        pp.close()
-
 
 def gaussian_peak_fitting(all_data, peak_wavelength):
     all_data = fitting_bb_data(all_data)
