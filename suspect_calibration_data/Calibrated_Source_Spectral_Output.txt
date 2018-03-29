@@ -1,4 +1,5 @@
-#DataThief /Users/tuckermcclanahan/Downloads/./DH-3-BAL-CAL-Balanced-Calibrated_Source_Spectral_Output.png Tuesday 20-Feb-2018 3:04:16 PM
+#DataThief /Users/tuckermcclanahan/Downloads/./DH-3-BAL-CAL-Balanced-Calibrated_Source_Spectral_Output.png Tuesday 20-Feb-2018 3:04:16 P
+
 230.1493, 16.7667
 230.1454, 16.7206
 230.1415, 16.6743
