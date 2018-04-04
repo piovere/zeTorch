@@ -17,4 +17,5 @@ We produce spectra from feeding various samples into a plasma torch. The samples
 - [Example of 1-D signal smoothing in numpy](http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html)
 - [Numerical Methods in Fortran](https://websites.pmc.ucsc.edu/~fnimmo/eart290c_17/NumericalRecipesinF77.pdf): Textbook on implementing various numerical methods
 - [Voigt profile function in Python](https://scipython.com/book/chapter-8-scipy/examples/the-voigt-profile/)
+- [Ocean Optics spectrometer library for Python](https://github.com/ap--/python-seabreeze)
 
